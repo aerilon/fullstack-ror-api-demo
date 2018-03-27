@@ -94,6 +94,9 @@ class Amazon
     node = xml.xpath('//BrowseNodes/BrowseNode').first
     categories.push(node.at('Name').text)
     while node = node.at('Ancestors BrowseNode') do
+      if !node.at_xpath('IsCategoryRoot').nil?
+        next
+      end
       categories.push(node.at('Name').text)
     end
     product[:category] = categories.join(" / ")
