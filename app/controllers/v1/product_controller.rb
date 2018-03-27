@@ -140,4 +140,22 @@ class V1::ProductController < ApplicationController
 
     render json: ret[:message], :status => ret[:status]
   end
+
+  def show
+    params.permit(:id)
+
+    id = params[:id]
+
+    # parameter validation
+    if !id.match(/\A[[:digit:]]+\z/)
+      render json: { error: "invalid ID format: " + id }, :status => :bad_request and return
+    end
+
+    product = Product.find(id)
+
+    render json: product, :status => 200
+  end
+
+  private def fetch_product(id)
+  end
 end
