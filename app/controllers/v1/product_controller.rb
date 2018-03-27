@@ -64,6 +64,11 @@ class Amazon
     # 2. retrieve the product's rank
     product[:rank] = xml.xpath('//SalesRank').text
 
+    error = xml.xpath('//Items/Request/Errors/Error')
+    if !error.empty?
+      throw :halt, { :message => { :status => "Product not found (wrong ID ?)" }, :status => :bad_request }
+    end
+
     # 3. its dimensions, converted to a human readable format
     # TODO `ItemDimensions' might not be available for every product
     dimensions = []
