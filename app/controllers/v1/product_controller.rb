@@ -117,7 +117,7 @@ class V1::ProductController < ApplicationController
     # parameter validation
     case id[:type]
     when "ASIN"
-      if !/\A[A-Z0-9]{10}\z/.match(id[:value])
+      if !id[:value].match(/\A[A-Z0-9]{10}\z/)
         render json: { error: "invalid ASIN: " + id[:value] }, :status => :bad_request and return
       end
     else
