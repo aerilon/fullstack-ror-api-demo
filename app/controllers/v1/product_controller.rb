@@ -70,20 +70,24 @@ class Amazon
     end
 
     # 3. its dimensions, converted to a human readable format
-    # TODO `ItemDimensions' might not be available for every product
-    dimensions = []
-    [
-      xml.xpath('//ItemDimensions/Height'),
-      xml.xpath('//ItemDimensions/Length'),
-      xml.xpath('//ItemDimensions/Width'),
-    ].each do |node|
-      # XXX it is unclear what unit are possible
-      case node.attribute("Units").text
-      when "hundredths-inches"
-        dimensions.push((node.text.to_i * 0.01).to_s + "\"")
+    item_dimensions = xml.xpath('//ItemDimensions')
+    if !item_dimensions.empty?
+      dimensions = []
+      [
+        item_dimensions.at('Height'),
+        item_dimensions.at('Length'),
+        item_dimensions.at('Width'),
+      ].each do |node|
+        # XXX it is unclear what unit are possible
+        case node.attribute("Units").text
+        when "hundredths-inches"
+          dimensions.push((node.text.to_i * 0.01).to_s + "\"")
+        end
       end
+      product[:dimensions] = dimensions.join('x')
+    else
+      product[:dimensions] = ""
     end
-    product[:dimensions] = dimensions.join('x')
 
     # 4. and finally, its cotegory
     categories = []
