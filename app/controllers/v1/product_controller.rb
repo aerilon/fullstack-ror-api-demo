@@ -134,8 +134,12 @@ class V1::ProductController < ApplicationController
 
     # Let's go !
     ret = catch :halt do
-      Product.create(Amazon::lookup(id))
-      { :message => { :status => "Ok" }, :status => 200 }
+      product = Product.new(Amazon::lookup(id))
+      product.save!
+
+      response.set_header('Location', "/" + params[:controller] + "/" + product.id.to_s)
+
+      { :message => product, :status => 201 }
     end
 
     render json: ret[:message], :status => ret[:status]
