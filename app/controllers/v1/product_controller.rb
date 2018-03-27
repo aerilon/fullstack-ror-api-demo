@@ -124,6 +124,14 @@ class V1::ProductController < ApplicationController
       render json: { error: "unknown parameter type: " + id[:type] }, :status => :bad_request and return
     end
 
+    # Check for duplicates
+    product = Product.find_by(asin: id[:value])
+    if id[:type] == "ASIN" and !product.nil?
+      response.set_header('Location', "/" + params[:controller] + "/" + product.id.to_s)
+
+      render json: { error: "product already exist" }, :status => :see_other and return
+    end
+
     # Let's go !
     ret = catch :halt do
       Product.create(Amazon::lookup(id))
