@@ -88,12 +88,12 @@ class App extends React.Component {
 
     delete json["id"]
 
-    this.setState({ data: json, dim_page: false, show_product: true })
+    this.setState({ data: json, dim_page: false })
   }
 
   closeProduct()
   {
-    this.setState({ show_product: false, data: null, redirected: false })
+    this.setState({ data: null, redirected: false })
   }
 
   render() {
@@ -110,7 +110,7 @@ class App extends React.Component {
 
     return(
       <div>
-      <Modal open={this.state.show_product} onClose={() => this.closeProduct()} closeIcon style={{ padding: '1rem' }}>
+      <Modal open={this.state.data != null} onClose={() => this.closeProduct()} closeIcon style={{ padding: '1rem' }}>
         <Message warning hidden={ !this.state.redirected }>
           <Message.Header>Warning</Message.Header>
           <p>Product was already present in the database, this is a cached version.</p>
