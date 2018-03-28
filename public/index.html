@@ -32,6 +32,63 @@ const {
   Select,
 } = semanticUIReact;
 
+class ErrorModal extends React.Component {
+  constructor(props)
+  {
+    super(props)
+  }
+
+  render()
+  {
+    return (
+      <Modal open={this.props.text != null} onClose={this.props.onClose} closeIcon style={{ padding: '1rem' }}>
+        <Message error>
+          <Message.Header>{this.props.text}</Message.Header>
+        </Message>
+      </Modal>
+    )
+  }
+}
+
+class ProductModal extends React.Component {
+  constructor(props)
+  {
+    super(props)
+  }
+
+  render()
+  {
+    return (
+      <Modal open={this.props.items.length != 0} onClose={this.props.onClose} closeIcon style={{ padding: '1rem' }}>
+        <Message warning hidden={ !this.props.redirected }>
+          <Message.Header>Warning</Message.Header>
+          <p>Product was already present in the database, this is a cached version.</p>
+        </Message>
+        <Header icon='archive' content='Product search' />
+        <List>
+          { this.props.items }
+        </List>
+      </Modal>
+      )
+  }
+}
+
+class SearchDimmer extends React.Component {
+  constructor(props)
+  {
+    super(props)
+  }
+
+  render()
+  {
+    return (
+      <Dimmer active={ this.props.visible } page>
+        <Loader>Loading</Loader>
+      </Dimmer>
+      )
+  }
+}
+
 class App extends React.Component {
   onClick = () => this.input.focus();
   constructor(props)
@@ -123,43 +180,28 @@ class App extends React.Component {
 
     return(
       <div>
-      <Modal open={this.state.error != null} onClose={() => this.closeError()} closeIcon style={{ padding: '1rem' }}>
-        <Message error>
-          <Message.Header>{this.state.error}</Message.Header>
-        </Message>
-      </Modal>
-      <Modal open={this.state.data != null} onClose={() => this.closeProduct()} closeIcon style={{ padding: '1rem' }}>
-        <Message warning hidden={ !this.state.redirected }>
-          <Message.Header>Warning</Message.Header>
-          <p>Product was already present in the database, this is a cached version.</p>
-        </Message>
-        <Header icon='archive' content='Product search' />
-        <List>
-          {list_items}
-        </List>
-      </Modal>
-      <Dimmer active={ this.state.dim_page } page>
-        <Loader>Loading</Loader>
-      </Dimmer>
-      <Container textAlign='center' text style={{ padding: '1rem' }}>
-        <Grid>
-          <Grid.Row className="segment centered">
-            <Header as='h2' icon>
-              <Icon name='amazon' />
-              Amazon product lookup
-            </Header>
-          </Grid.Row>
-          <Grid.Row className="segment centered">
-            <Input placeholder='Search...' value={this.state.search_value} onChange={ (e, data) => this.onSearchInputChange(data) }>
-              <Select compact options={search_opts} defaultValue={this.state.search_type} onChange={ (e, data) => this.onSearchSelectChange(data) }/>
-              <input />
-              <Button type='submit' icon='search' onClick={() => this.triggerSearch() } disabled={ !this.isValidSearch() } />
-            </Input>
-          </Grid.Row>
-        </Grid>
-      </Container>
+        <ErrorModal text={ this.state.error } onClose={ () => this.closeError() } />
+        <ProductModal items={ list_items } redirected={ this.state.redirected } onClose={ () => this.closeProduct() }/>
+        <SearchDimmer visible={ this.state.dim_page } />
+        <Container textAlign='center' text style={{ padding: '1rem' }}>
+          <Grid>
+            <Grid.Row className="segment centered">
+              <Header as='h2' icon>
+                <Icon name='amazon' />
+                Amazon product lookup
+              </Header>
+            </Grid.Row>
+            <Grid.Row className="segment centered">
+              <Input placeholder='Search...' value={this.state.search_value} onChange={ (e, data) => this.onSearchInputChange(data) }>
+                <Select compact options={search_opts} defaultValue={this.state.search_type} onChange={ (e, data) => this.onSearchSelectChange(data) }/>
+                <input />
+                <Button type='submit' icon='search' onClick={() => this.triggerSearch() } disabled={ !this.isValidSearch() } />
+              </Input>
+            </Grid.Row>
+          </Grid>
+        </Container>
       </div>
-    )
+      )
   }
 }
 
