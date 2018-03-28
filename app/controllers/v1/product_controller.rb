@@ -166,7 +166,4 @@ class V1::ProductController < ApplicationController
 
     render json: product, :status => 200, :except => [:created_at, :updated_at]
   end
-
-  private def fetch_product(id)
-  end
 end
