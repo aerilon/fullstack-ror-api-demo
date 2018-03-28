@@ -149,7 +149,7 @@ class V1::ProductController < ApplicationController
       { :message => product, :status => 201 }
     end
 
-    render json: ret[:message], :status => ret[:status]
+    render json: ret[:message], :status => ret[:status], :except => [:created_at, :updated_at]
   end
 
   def show
@@ -164,7 +164,7 @@ class V1::ProductController < ApplicationController
 
     product = Product.find(id)
 
-    render json: product, :status => 200
+    render json: product, :status => 200, :except => [:created_at, :updated_at]
   end
 
   private def fetch_product(id)
