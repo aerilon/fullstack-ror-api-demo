@@ -72,12 +72,20 @@ class App extends React.Component {
 
     let request = { product: { id: { type: this.state.search_type, value: this.state.search_value } } }
 
-    const response = await fetch(document.origin + "/v1/product",
+    let response = null;
+    try {
+      response = await fetch(document.origin + "/v1/product",
+        {
+          method: 'post',
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(request)
+        })
+    }
+    catch (e)
     {
-      method: 'post',
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(request)
-    })
+      this.setState({ error: "Unable to issue network request: " + e, dim_page: false })
+      return
+    }
 
     if (response.redirected)
     {
@@ -96,6 +104,11 @@ class App extends React.Component {
     this.setState({ data: null, redirected: false })
   }
 
+  closeError()
+  {
+    this.setState({ error: null })
+  }
+
   render() {
     const search_opts = [
       { key: 'ASIN', text: 'ASIN', value: 'ASIN' },
@@ -110,6 +123,11 @@ class App extends React.Component {
 
     return(
       <div>
+      <Modal open={this.state.error != null} onClose={() => this.closeError()} closeIcon style={{ padding: '1rem' }}>
+        <Message error>
+          <Message.Header>{this.state.error}</Message.Header>
+        </Message>
+      </Modal>
       <Modal open={this.state.data != null} onClose={() => this.closeProduct()} closeIcon style={{ padding: '1rem' }}>
         <Message warning hidden={ !this.state.redirected }>
           <Message.Header>Warning</Message.Header>
