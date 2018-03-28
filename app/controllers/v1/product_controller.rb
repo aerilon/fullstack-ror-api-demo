@@ -8,13 +8,13 @@ require 'uri'
 class Amazon
 
   # Access Key ID, as taken from the Your Account page
-  ACCESS_KEY_ID = "AKIAJKLXRSGXMDUCBPQQ"
+  ACCESS_KEY_ID = ENV['AMAZON_ACCESS_KEY_ID']
 
   # Secret Key corresponding to the above ID, as taken from the Your Account page
   SECRET_KEY = ENV['AMAZON_SECRET_KEY']
 
   # Your Associate Tag
-  ASSOCIATE_TAG_ID = "aerilon-09-20"
+  ASSOCIATE_TAG_ID = ENV['AMAZON_ASSOCIATE_TAG_ID']
 
   # The region you are interested in
   ENDPOINT = "webservices.amazon.ca"
