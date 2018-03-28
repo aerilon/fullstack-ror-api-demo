@@ -1,24 +1,25 @@
-# README
+## Synopsis
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Fullstack demo application based on RoR & React / Semantic-UI.
 
-Things you may want to cover:
+## Deployment instructions
 
-* Ruby version
+```
+% sudo docker build --tag fullstack-ror-api-demo .
+% sudo docker run -it --privileged --rm \
+	-e AMAZON_ACCESS_KEY_ID=... \
+	-e AMAZON_ASSOCIATE_TAG_ID=... \
+	-e AMAZON_SECRET_KEY=... \
+	-p 3000:3000 \
+	fullstack-ror-api-demo
+```
 
-* System dependencies
+## Requirements
 
-* Configuration
+ * system capable to run RoR
+ * Amazon Affliate account
 
-* Database creation
+## Limitations
 
-* Database initialization
+ * Currently limited to Amazon Canada
 
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
