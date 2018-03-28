@@ -1,0 +1,66 @@
+openapi: '3.0'
+info:
+  description: |
+    This is the API for a demo fullstack application based on RoR.
+  version: 1.0.0
+  title: Fullstack RoR API demo
+  contact:
+    email: al@aerilon.ca
+  license:
+    name: ISC
+    url: https://opensource.org/licenses/ISC
+paths:
+  /v1/product:
+    post:
+      summary: Add a new pet to the store
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Pet object that needs to be added to the store
+        required: true
+        schema:
+          $ref: '#/definitions/product'
+      responses:
+        201:
+          description: Created, answered on record creation success
+        303:
+          description: See Other, answered when record already exist
+  /v1/product/{id}:
+    get:
+      summary: Return a product
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: The user ID
+      responses:
+        200:
+          description: Success
+        404:
+          description: Not Found
+definitions:
+  product:
+    type: object
+    properties:
+      product:
+        type: object
+        properties:
+          id:
+            type: object
+            properties:
+              type:
+                type: string
+              value:
+                type: string
+externalDocs:
+  url: http://github.com/aerilon/fullstack-ror-api-demo
+schemes:
+ - https
+ - http
