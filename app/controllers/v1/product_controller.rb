@@ -81,7 +81,7 @@ class Amazon
         # XXX it is unclear what unit are possible
         case node.attribute("Units").text
         when "hundredths-inches"
-          dimensions.push((node.text.to_i * 0.01).to_s + "\"")
+          dimensions.push((node.text.to_i * 0.01).truncate(2).to_s + "\"")
         end
       end
       product[:dimensions] = dimensions.join('x')
