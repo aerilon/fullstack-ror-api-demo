@@ -1,0 +1,153 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>FullStack RoR API demo</title>
+
+    <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui-react/0.79.0/semantic-ui-react.min.js"></script>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.12/semantic.min.css"></link>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.14.0/babel.min.js"></script>
+    <script type="text/babel" data-presets="es2017, stage-3" data-plugins="syntax-async-functions,transform-class-properties"></script>
+</head>
+
+<body>
+  <div id="app"> </div>
+  <div id="root"> </div>
+  <script type="text/babel">
+
+const {
+  Button,
+  Container,
+  Dimmer,
+  Grid,
+  Header,
+  Icon,
+  Input,
+  List,
+  Loader,
+  Message,
+  Modal,
+  Select,
+} = semanticUIReact;
+
+class App extends React.Component {
+  onClick = () => this.input.focus();
+  constructor(props)
+  {
+    super(props)
+    this.state = {
+      search_value: '',
+      search_type: 'ASIN',
+      dim_page: false,
+      show_product: false,
+      redirected: false,
+    }
+  }
+
+  onSearchInputChange(data)
+  {
+    this.setState({ search_value: data.value })
+  }
+
+  onSearchSelectChange(data)
+  {
+    this.setState({ search_type: data.value })
+  }
+
+  isValidSearch()
+  {
+    if (this.state.search_type === 'ASIN')
+    {
+      return this.state.search_value.match(/^B[\dA-Z]{9}|\d{9}(X|\d)$/)
+    }
+
+    return false
+  }
+
+  triggerSearch = async () =>
+  {
+    this.setState({ dim_page: true })
+
+    let request = { product: { id: { type: this.state.search_type, value: this.state.search_value } } }
+
+    const response = await fetch(document.origin + "/v1/product",
+    {
+      method: 'post',
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(request)
+    })
+
+    if (response.redirected)
+    {
+      this.setState({ redirected: true })
+    }
+
+    const json = await response.json()
+
+    delete json["id"]
+
+    this.setState({ data: json, dim_page: false, show_product: true })
+  }
+
+  closeProduct()
+  {
+    this.setState({ show_product: false, data: null, redirected: false })
+  }
+
+  render() {
+    const search_opts = [
+      { key: 'ASIN', text: 'ASIN', value: 'ASIN' },
+    ]
+
+    let list_items = []
+    let data = this.state.data
+    if (data)
+    {
+      list_items = Object.keys(data).map((key) => <List.Item key={key}>{key + ": " + data[key]}</List.Item>)
+    }
+
+    return(
+      <div>
+      <Modal open={this.state.show_product} onClose={() => this.closeProduct()} closeIcon style={{ padding: '1rem' }}>
+        <Message warning hidden={ !this.state.redirected }>
+          <Message.Header>Warning</Message.Header>
+          <p>Product was already present in the database, this is a cached version.</p>
+        </Message>
+        <Header icon='archive' content='Product search' />
+        <List>
+          {list_items}
+        </List>
+      </Modal>
+      <Dimmer active={ this.state.dim_page } page>
+        <Loader>Loading</Loader>
+      </Dimmer>
+      <Container textAlign='center' text style={{ padding: '1rem' }}>
+        <Grid>
+          <Grid.Row className="segment centered">
+            <Header as='h2' icon>
+              <Icon name='amazon' />
+              Amazon product lookup
+            </Header>
+          </Grid.Row>
+          <Grid.Row className="segment centered">
+            <Input placeholder='Search...' value={this.state.search_value} onChange={ (e, data) => this.onSearchInputChange(data) }>
+              <Select compact options={search_opts} defaultValue={this.state.search_type} onChange={ (e, data) => this.onSearchSelectChange(data) }/>
+              <input />
+              <Button type='submit' icon='search' onClick={() => this.triggerSearch() } disabled={ !this.isValidSearch() } />
+            </Input>
+          </Grid.Row>
+        </Grid>
+      </Container>
+      </div>
+    )
+  }
+}
+
+ReactDOM.render(<App />, document.getElementById('app'));
+
+</script>
+
+</body>
+</html>
