@@ -24,7 +24,7 @@ class AmazonAffiliateService
   end
 
   def lookup_product(id)
-    uri = URI.parse(get_request_url(id))
+    uri = get_request_uri(id)
 
     response = Net::HTTP.get_response(uri)
     if response.code() != "200"
@@ -38,7 +38,7 @@ class AmazonAffiliateService
   private
 
   # from http://webservices.amazon.ca/scratchpad/index.html
-  def get_request_url(id)
+  def get_request_uri(id)
     params = {
       "Service" => "AWSECommerceService",
       "Operation" => "ItemLookup",
@@ -65,6 +65,8 @@ class AmazonAffiliateService
 
     # Generate the signed URL
     request_url = "http://#{@endpoint}#{@request_uri}?#{canonical_query_string}&Signature=#{URI.escape(signature, Regexp.new("[^#{URI::PATTERN::UNRESERVED}]"))}"
+
+    URI.parse(request_url)
   end
 
   def parse_xml(body)
