@@ -5,29 +5,45 @@ require 'nokogiri'
 require 'time'
 require 'uri'
 
-class Amazon
+class AmazonAffiliateService
 
-  # Access Key ID, as taken from the Your Account page
-  ACCESS_KEY_ID = ENV['AMAZON_ACCESS_KEY_ID']
+  def initialize(endpoint, access_key_id, secret_key, associate_tag_id)
+    # The region you are interested in
+    @endpoint = endpoint
 
-  # Secret Key corresponding to the above ID, as taken from the Your Account page
-  SECRET_KEY = ENV['AMAZON_SECRET_KEY']
+    # Access Key ID, as taken from the Your Account page
+    @access_key_id = access_key_id
 
-  # Your Associate Tag
-  ASSOCIATE_TAG_ID = ENV['AMAZON_ASSOCIATE_TAG_ID']
+    # Secret Key corresponding to the above ID, as taken from the Your Account page
+    @secret_key = secret_key
 
-  # The region you are interested in
-  ENDPOINT = "webservices.amazon.ca"
+    # Your Associate Tag
+    @associate_tag_id = associate_tag_id
 
-  REQUEST_URI = "/onca/xml"
+    @request_uri = "/onca/xml"
+  end
+
+  def lookup_product(id)
+    uri = URI.parse(get_request_url(id))
+
+    response = Net::HTTP.get_response(uri)
+    if response.code() != "200"
+      print response.code()
+      throw :halt, { :message => { :status => "unable to fetch product from remote: " + response.code() }, :status => :bad_request }
+    end
+
+    parse_xml(response.body())
+  end
+
+  private
 
   # from http://webservices.amazon.ca/scratchpad/index.html
-  def self.get_request_url(id)
+  def get_request_url(id)
     params = {
       "Service" => "AWSECommerceService",
       "Operation" => "ItemLookup",
-      "AWSAccessKeyId" => ACCESS_KEY_ID,
-      "AssociateTag" => ASSOCIATE_TAG_ID,
+      "AWSAccessKeyId" => @access_key_id,
+      "AssociateTag" => @associate_tag_id,
       "ItemId" => id[:value],
       "IdType" => id[:type],
       "ResponseGroup" => "Large"
@@ -42,16 +58,16 @@ class Amazon
     end.join('&')
 
     # Generate the string to be signed
-    string_to_sign = "GET\n#{ENDPOINT}\n#{REQUEST_URI}\n#{canonical_query_string}"
+    string_to_sign = "GET\n#{@endpoint}\n#{@request_uri}\n#{canonical_query_string}"
 
     # Generate the signature required by the Product Advertising API
-    signature = Base64.encode64(OpenSSL::HMAC.digest(OpenSSL::Digest.new('sha256'), SECRET_KEY, string_to_sign)).strip()
+    signature = Base64.encode64(OpenSSL::HMAC.digest(OpenSSL::Digest.new('sha256'), @secret_key, string_to_sign)).strip()
 
     # Generate the signed URL
-    request_url = "http://#{ENDPOINT}#{REQUEST_URI}?#{canonical_query_string}&Signature=#{URI.escape(signature, Regexp.new("[^#{URI::PATTERN::UNRESERVED}]"))}"
+    request_url = "http://#{@endpoint}#{@request_uri}?#{canonical_query_string}&Signature=#{URI.escape(signature, Regexp.new("[^#{URI::PATTERN::UNRESERVED}]"))}"
   end
 
-  def self.parse_xml(body)
+  def parse_xml(body)
     xml = Nokogiri::XML(body, nil, 'UTF-8')
 
     xml.remove_namespaces!
@@ -103,18 +119,6 @@ class Amazon
 
     product
   end
-
-  def self.lookup(id)
-    uri = URI.parse(self.get_request_url(id))
-
-    response = Net::HTTP.get_response(uri)
-    if response.code() != "200"
-      print response.code()
-      throw :halt, { :message => { :status => "unable to fetch product from remote: " + response.code() }, :status => :bad_request }
-    end
-
-    self.parse_xml(response.body())
-  end
 end
 
 class V1::ProductController < ApplicationController
@@ -140,8 +144,14 @@ class V1::ProductController < ApplicationController
     end
 
     # Let's go !
+    amazonAffiliateService = AmazonAffiliateService.new(
+      "webservices.amazon.ca",
+      ENV['AMAZON_ACCESS_KEY_ID'],
+      ENV['AMAZON_SECRET_KEY'],
+      ENV['AMAZON_ASSOCIATE_TAG_ID'],
+    )
     ret = catch :halt do
-      product = Product.new(Amazon::lookup(id))
+      product = Product.new(amazonAffiliateService.lookup_product(id))
       product.save!
 
       response.set_header('Location', "/" + params[:controller] + "/" + product.id.to_s)
